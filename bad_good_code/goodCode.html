@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>百度热搜 - 优化实现</title>
+    <meta charset="utf-8" />
+    <style>
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      .hot-item {
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: transform 0.2s;
+      }
+      .hot-item:hover {
+        transform: translateY(-2px);
+      }
+      .hot-title {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+      }
+      .hot-desc {
+        color: #666;
+        margin: 10px 0;
+      }
+      .hot-image {
+        max-width: 200px;
+        border-radius: 4px;
+      }
+      .hot-meta {
+        color: #999;
+        font-size: 14px;
+      }
+      .rank-1-10 {
+        color: #ff4d4f;
+      }
+      .rank-11-20 {
+        color: #1890ff;
+      }
+      .error-message {
+        color: #ff4d4f;
+        padding: 20px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" class="container"></div>
+    <script>
+      // 常量定义
+      const API_URL = "https://hot.cigh.cn/baidu";
+      const RANK_STYLES = {
+        TOP_10: "rank-1-10",
+        TOP_20: "rank-11-20",
+      };
+
+      // 主函数
+      async function initHotList() {
+        try {
+          const data = await fetchHotList();
+          renderHotList(data);
+        } catch (error) {
+          handleError(error);
+        }
+      }
+
+      // 数据获取
+      async function fetchHotList() {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+      }
+
+      // 获取排名样式
+      function getRankStyle(index) {
+        if (index < 10) return RANK_STYLES.TOP_10;
+        if (index < 20) return RANK_STYLES.TOP_20;
+        return "";
+      }
+
+      // 创建热搜项HTML
+      function createHotItemHTML(item, index) {
+        const rankStyle = getRankStyle(index);
+        return `
+                <div class="hot-item">
+                    <h3 class="hot-title ${rankStyle}">
+                        ${index + 1}. ${item.title}
+                    </h3>
+                    ${
+                      item.pic
+                        ? `<img class="hot-image" src="${item.pic}" alt="${item.title}">`
+                        : ""
+                    }
+                    ${item.desc ? `<p class="hot-desc">${item.desc}</p>` : ""}
+                    <div class="hot-meta">热度：${item.hot.toLocaleString()}</div>
+                </div>
+            `;
+      }
+
+      // 渲染列表
+      function renderHotList(data) {
+        if (!data || !data.data) {
+          throw new Error("Invalid data format");
+        }
+
+        const app = document.getElementById("app");
+        const hotListHTML = data.data
+          .map((item, index) => createHotItemHTML(item, index))
+          .join("");
+
+        app.innerHTML = `
+                <h1>百度热搜榜</h1>
+                <p>更新时间：${new Date(data.updateTime).toLocaleString()}</p>
+                ${hotListHTML}
+            `;
+      }
+
+      // 错误处理
+      function handleError(error) {
+        const app = document.getElementById("app");
+        app.innerHTML = `
+                <div class="error-message">
+                    <h2>获取数据失败</h2>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        console.error("Error:", error);
+      }
+
+      // 初始化
+      initHotList();
+    </script>
+  </body>
+</html>

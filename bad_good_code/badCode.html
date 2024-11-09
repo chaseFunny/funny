@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>百度热搜 - 糟糕实现</title>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // 不声明常量直接使用，混乱的代码结构
+      var app = document.getElementById("app");
+      // 没有语义化的变量声明
+      var s = true;
+
+      // 可读性极差的代码
+      try {
+        fetch("https://hot.cigh.cn/baidu1")
+          .then(function (d) {
+            if (d.status !== 200) {
+              return (s = false);
+            }
+
+            d.json().then(function (data) {
+              if (!data) {
+                return (s = false);
+              }
+              var str = "";
+              // 面条式代码，重复的DOM操作
+              str += '<div style="background: #f0f0f0">';
+              for (var i = 0; i < data.data.length; i++) {
+                // 魔法数字判断
+                if (i < 10) {
+                  str +=
+                    '<div style="border: 1px solid #ccc; margin: 10px; padding: 10px">';
+                  str +=
+                    '<h3 style="color: red">' +
+                    (i + 1) +
+                    ". " +
+                    data.data[i].title +
+                    "</h3>";
+                  if (data.data[i].pic) {
+                    str +=
+                      '<img src="' +
+                      data.data[i].pic +
+                      '" style="width: 100px"/>';
+                  }
+                  if (data.data[i].desc) {
+                    str += "<p>" + data.data[i].desc + "</p>";
+                  }
+                  str += "<span>热度：" + data.data[i].hot + "</span>";
+                  str += "</div>";
+                } else if (i >= 10 && i < 20) {
+                  str +=
+                    '<div style="border: 1px solid #ccc; margin: 10px; padding: 10px">';
+                  str +=
+                    '<h3 style="color: blue">' +
+                    (i + 1) +
+                    ". " +
+                    data.data[i].title +
+                    "</h3>";
+                  if (data.data[i].pic) {
+                    str +=
+                      '<img src="' +
+                      data.data[i].pic +
+                      '" style="width: 100px"/>';
+                  }
+                  if (data.data[i].desc) {
+                    str += "<p>" + data.data[i].desc + "</p>";
+                  }
+                  str += "<span>热度：" + data.data[i].hot + "</span>";
+                  str += "</div>";
+                } else {
+                  str +=
+                    '<div style="border: 1px solid #ccc; margin: 10px; padding: 10px">';
+                  str += "<h3>" + (i + 1) + ". " + data.data[i].title + "</h3>";
+                  if (data.data[i].pic) {
+                    str +=
+                      '<img src="' +
+                      data.data[i].pic +
+                      '" style="width: 100px"/>';
+                  }
+                  if (data.data[i].desc) {
+                    str += "<p>" + data.data[i].desc + "</p>";
+                  }
+                  str += "<span>热度：" + data.data[i].hot + "</span>";
+                  str += "</div>";
+                }
+              }
+              str += "</div>";
+              app.innerHTML = str;
+            });
+          })
+          .finally(function () {
+            if (!s) {
+              // 错误的HTML注入
+              app.innerHTML = `
+          <div style="
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              background: red;
+              color: yellow;
+              padding: 20px;
+              font-family: Comic Sans MS;
+              border: 10px dashed purple;
+              animation: spin 1s linear infinite;
+          ">
+              <h1 style="
+                  font-size: 40px;
+                  color: lime;
+                  text-shadow: 2px 2px blue;
+              ">😱 糟糕，出错啦！😱</h1>
+              <div style="
+                  font-size: 24px;
+                  color: white;
+                  background: black;
+                  padding: 10px;
+                  margin: 10px;
+                  border-radius: 20px;
+              ">
+                  这个页面加载失败了！
+                  <br>
+                  请检查控制台看看到底哪里出错了...
+              </div>
+          </div>
+      `;
+            }
+          });
+      } catch (error) {
+        console.log(error);
+        s = false;
+      }
+    </script>
+  </body>
+</html>
